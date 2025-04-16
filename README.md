@@ -1,4 +1,5 @@
 # buzhash
+![Coverage](https://img.shields.io/badge/Coverage-97.4%25-brightgreen)
 
 A blazing-fast, zero-allocation **rolling hash** library in pure Go (with optional cgo boost), built for high-performance sliding window applications like phrase detection, content matching, and chunk-based processing.
 
