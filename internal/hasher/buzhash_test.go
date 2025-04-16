@@ -1,4 +1,4 @@
-package buzhash
+package hasher
 
 import (
 	"bytes"

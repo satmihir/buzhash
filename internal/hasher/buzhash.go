@@ -1,4 +1,4 @@
-package buzhash
+package hasher
 
 import (
 	"encoding/binary"
@@ -99,6 +99,15 @@ type Hasher struct {
 	hash uint64
 }
 
+// BulkRoll implements RollingHash.
+func (h *Hasher) BulkRoll(stride uint32) ([]uint64, error) {
+	if stride == 0 {
+		return nil, ErrIllegalStride
+	}
+
+	return bulkRoll(h.buf, h.position, h.windowSize, stride, h.hash), nil
+}
+
 // Creates a new rolling hasher over the given buffer and window size the
 // window starting from 0 index.
 func New(buf []byte, windowSize uint32) (RollingHash, error) {
@@ -146,46 +155,6 @@ func (h *Hasher) Roll(step uint32) (uint64, error) {
 	}
 
 	return h.hash, nil
-}
-
-// Rolls over the window at the given stride and returns all hashes.
-// Does not change the window starting position.
-func (h *Hasher) BulkRoll(stride uint32) ([]uint64, error) {
-	if stride == 0 {
-		return nil, ErrIllegalStride
-	}
-
-	capacity := (uint32(len(h.buf))-h.windowSize-h.position)/stride + 1
-	hashes := make([]uint64, 0, capacity)
-
-	pos := h.position
-	hash := h.hash
-	window := h.windowSize
-
-	for {
-		if pos+window > uint32(len(h.buf)) {
-			break
-		}
-
-		hashes = append(hashes, hash)
-
-		for i := uint32(0); i < stride; i++ {
-			if pos+window >= uint32(len(h.buf)) {
-				return hashes, nil
-			}
-
-			out := h.buf[pos]
-			in := h.buf[pos+window]
-
-			hash = bits.RotateLeft64(hash, 1) ^
-				bits.RotateLeft64(table[out], int(window)) ^
-				table[in]
-
-			pos++
-		}
-	}
-
-	return hashes, nil
 }
 
 // Get the hash value of the current state of the hasher. Does not change the
