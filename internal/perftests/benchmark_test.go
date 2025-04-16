@@ -7,6 +7,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/satmihir/buzhash"
 	"github.com/spaolacci/murmur3"
 )
 
@@ -21,7 +22,7 @@ func BenchmarkRollOneByOne(b *testing.B) {
 	data := loadBook()
 	window := uint32(6)
 
-	h, err := New(data, window)
+	h, err := buzhash.New(data, window)
 	if err != nil {
 		b.Fatalf("failed to init hasher: %v", err)
 	}
@@ -44,7 +45,7 @@ func BenchmarkBulkRoll(b *testing.B) {
 	data := loadBook()
 	window := uint32(6)
 
-	h, err := New(data, window)
+	h, err := buzhash.New(data, window)
 	if err != nil {
 		b.Fatalf("failed to init hasher: %v", err)
 	}
@@ -72,7 +73,7 @@ func BenchmarkRecomputeEveryWindow(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		for j := 0; j < n; j++ {
-			h = Hash(data[j : j+window])
+			h = buzhash.Hash(data[j : j+window])
 		}
 	}
 	result = h
@@ -98,7 +99,7 @@ func extractRollingHashes(buf []byte, window int, useBuzhash bool) []uint64 {
 	n := len(buf) - window + 1
 	if useBuzhash {
 		for i := 0; i < n; i++ {
-			h := Hash(buf[i : i+window])
+			h := buzhash.Hash(buf[i : i+window])
 			hashes = append(hashes, h)
 		}
 	} else {
